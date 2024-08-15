@@ -60,10 +60,10 @@ async function run() {
       const { email, name } = users;
       console.log(users);
       const existingUser = await userCollection.findOne({ email });
-      if (existingUser) {
-        res.status(409).send({ message: "user already exist" });
-        return;
-      }
+    //   if (existingUser) {
+    //     res.status(409).send({ message: "user already exist" });
+    //     return;
+    //   }
       const result = await userCollection.insertOne(users);
       res.send(result);
     });
@@ -122,7 +122,6 @@ async function run() {
     //     // Pagination options
     //      const skip = (page - 1) * limit;
 
-
     //     const products = await productCollection
     //       .find(query)
     //       .sort(sortOptions)
@@ -143,59 +142,69 @@ async function run() {
     //   }
     // });
 
+    app.get("/products", async (req, res) => {
+      try {
+        const {
+          page = 1,
+          limit = 10,
+          search = "",
+          brand,
+          category,
+          minPrice,
+          maxPrice,
+          sortBy,
+          sortOrder = "asc",
+        } = req.query;
 
-    app.get('/products', async (req, res) => {
-        try {
-            const { page = 1, limit = 10, search = '', brand, category, minPrice, maxPrice, sortBy, sortOrder = 'asc' } = req.query;
-    
-            // Build the query object for filtering
-            let query = {};
-    
-            if (search) {
-                query.productName = { $regex: search, $options: 'i' }; // Case-insensitive search
-            }
-            if (brand) {
-                query.brandName = brand;
-            }
-            if (category) {
-                query.category = category;
-            }
-            if (minPrice && maxPrice) {
-                query.price = { $gte: parseFloat(minPrice), $lte: parseFloat(maxPrice) };
-            }
-    
-            // Sorting options
-            let sortOptions = {};
-            if (sortBy) {
-                sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1; // Ascending or descending
-            } else {
-                sortOptions['creationDate'] = -1; // Default sort by newest first
-            }
-    
-            // Pagination options
-            const skip = (page - 1) * limit;
-    
-            const products = await productCollection.find(query)
-                .sort(sortOptions)
-                .skip(skip)
-                .limit(parseInt(limit))
-                .toArray();
-    
-            const totalProducts = await productCollection.countDocuments(query);
-    
-            res.send({
-                products,
-                totalProducts,
-                totalPages: Math.ceil(totalProducts / limit),
-                currentPage: parseInt(page)
-            });
-        } catch (error) {
-            res.status(500).send({ message: 'Error fetching products', error });
+        // Build the query object for filtering
+        let query = {};
+
+        if (search) {
+          query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
         }
-    });
-    
-      
+        if (brand) {
+          query.brandName = brand;
+        }
+        if (category) {
+          query.category = category;
+        }
+        if (minPrice && maxPrice) {
+          query.price = {
+            $gte: parseFloat(minPrice),
+            $lte: parseFloat(maxPrice),
+          };
+        }
 
+        // Sorting options
+        let sortOptions = {};
+        if (sortBy) {
+          sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1; // Ascending or descending
+        } else {
+          sortOptions["creationDate"] = -1; // Default sort by newest first
+        }
+
+        // Pagination options
+        const skip = (page - 1) * limit;
+
+        const products = await productCollection
+          .find(query)
+          .sort(sortOptions)
+          .skip(skip)
+          .limit(parseInt(limit))
+          .toArray();
+
+        const totalProducts = await productCollection.countDocuments(query);
+
+        res.send({
+          products,
+          totalProducts,
+          totalPages: Math.ceil(totalProducts / limit),
+          currentPage: parseInt(page),
+        });
+      } catch (error) {
+        res.status(500).send({ message: "Error fetching products", error });
+      }
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
