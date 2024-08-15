@@ -68,7 +68,7 @@ async function run() {
             res.send(result)
         })
 
-        //for products
+        //for getting products
         app.get('/products',async(req,res)=>{
             try {
                 const products = await productCollection.find().toArray();
