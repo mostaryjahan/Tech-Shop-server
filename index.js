@@ -28,6 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const userCollection = client.db('techDB').collection('users')
+        const productCollection = client.db('techDB').collection('products')
         
         // jwt token api making related
         app.post('/jwt', async (req, res) => {
@@ -53,7 +54,29 @@ async function run() {
         }
     
 
+       //for users
+        app.post('/users', async (req, res) => {
+            const users = req.body;
+            const {email, name} = users;
+            console.log(users);
+            const existingUser = await userCollection.findOne({ email });
+            if (existingUser) {
+                res.status(409).send({message: 'user already exist'})
+                return;
+            }
+            const result = await userCollection.insertOne(users);
+            res.send(result)
+        })
 
+        //for products
+        app.get('/products',async(req,res)=>{
+            try {
+                const products = await productCollection.find().toArray();
+                res.send(products)
+            } catch (error) {
+                res.status(500).send({ message: 'Error fetching products', error });
+            }
+        })
 
 
 
