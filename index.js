@@ -41,12 +41,7 @@ async function run() {
     });
 
    
-    
-
-  
-    
-   
-
+    // for products
     app.get("/products", async (req, res) => {
       try {
         const {
@@ -61,11 +56,11 @@ async function run() {
           sortOrder = "asc",
         } = req.query;
 
-        // Build the query object for filtering
+        //  query object for filtering
         let query = {};
 
         if (search) {
-          query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
+          query.productName = { $regex: search, $options: "i" }; 
         }
         if (brand) {
           query.brandName = brand;
@@ -110,6 +105,8 @@ async function run() {
         res.status(500).send({ message: "Error fetching products", error });
       }
     });
+
+    
 
     await client.db("admin").command({ ping: 1 });
     console.log(
